@@ -4,6 +4,10 @@ import "fmt"
 
 type Point3D struct {
   X, Y, Z int
+
+}
+func (p *Point3D) Subtract(p1 Point3D) Point3D {
+  return Point3D{ X: p.X-p1.X, Y: p.Y-p1.Y, Z: p.Z-p1.Z}
 }
 
 type Ray struct {
