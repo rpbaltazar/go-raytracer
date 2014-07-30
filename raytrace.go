@@ -24,6 +24,10 @@ func (p *Point3D) PointMultiply(p1 Point3D) Point3D {
   return Point3D{ X: p.X*p1.X, Y: p.Y*p1.Y, Z: p.Z*p1.Z}
 }
 
+func (p *Point3D) ScalarProd(p1 Point3D) float64 {
+  return  p.X*p1.X + p.Y*p1.Y + p.Z*p1.Z
+}
+
 func (p *Point3D) Pow(f float64) Point3D {
   return Point3D{ X: math.Pow(p.X, f), Y: math.Pow(p.Y, f), Z: math.Pow(p.Z, f) }
 }
@@ -58,9 +62,8 @@ func main() {
       // fmt.Println(primRay)
       //Scene.isIntersectedBy(primRay)
       for idx := 0; idx < len(scene); idx ++{
-        if intersects(primRay, scene[idx]){
-          fmt.Println(primRay)
-        }
+        inter := intersects(primRay, scene[idx])
+        fmt.Println(inter)
       }
     }
   }
@@ -72,22 +75,13 @@ func intersects(primRay Ray, obj Sphere) bool{
   c := obj.Center
   r := obj.SphereRay
 
-  t1 := v.PointMultiply(o.Subtract(c))
-  t1 = t1.Pow(2)
+  oc := o.Subtract(c)
 
-  ti1 := o.PointMultiply(c)
-  ti1 = ti1.Multiply(2)
+  A := v.ScalarProd(v)
+  B := 2* oc.ScalarProd(v)
+  C := oc.ScalarProd(oc) - math.Pow(r,2)
 
-  ti2 := o.Pow(2)
-  ti3 := c.Pow(2)
-
-  t2 := ti2.Subtract(ti1)
-  t2 = t2.Add(ti3)
-
-  t3 := math.Pow(r, 2)
-
-  fmt.Println(t3, o,c, o.Subtract(c))
-  return false
+  return math.Pow(B, 2) - 4*A*C > 0
 }
 
 func loadScene() []Sphere{
