@@ -69,7 +69,7 @@ func main() {
   }
 }
 
-func intersects(primRay Ray, obj Sphere) bool{
+func intersects(primRay Ray, obj Sphere) int{
   v := primRay.Direction
   o := primRay.Origin
   c := obj.Center
@@ -81,7 +81,16 @@ func intersects(primRay Ray, obj Sphere) bool{
   B := 2* oc.ScalarProd(v)
   C := oc.ScalarProd(oc) - math.Pow(r,2)
 
-  return math.Pow(B, 2) - 4*A*C > 0
+  delta := math.Pow(B, 2) - 4*A*C
+  //two solutions - calculate distance and return the closest
+  if delta > 0{
+    return 2
+  // one solution - return distance
+  }else if delta == 0{
+    return 1
+  }else{
+    return -1
+  }
 }
 
 func loadScene() []Sphere{
