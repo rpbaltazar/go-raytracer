@@ -6,40 +6,11 @@ import (
   "go-raytracer/lib/scene-objects"
 )
 
-// type Ray struct {
-//   Origin, Direction Point3D
-// }
-//
-// func (r *Ray) Point(t float64) Point3D {
-//   hX := r.Origin.X + t*r.Direction.X
-//   hY := r.Origin.Y + t*r.Direction.Y
-//   hZ := r.Origin.Z + t*r.Direction.Z
-//
-//   hitP := Point3D { X: hX, Y: hY, Z: hZ }
-//   return hitP
-// }
-//
-
-type Camera struct {
-  Position scene_objects.Point3D
-}
-
-type Sphere struct {
-  Center scene_objects.Point3D
-  SphereRay float64
-}
-
-type Intersection struct {
-  Object Sphere
-  Distance float64
-  HitPoint scene_objects.Point3D
-}
-
 var imageWidth, imageHeight int = 800, 640
 
 func main() {
 
-  camera := Camera{ scene_objects.Point3D{X: float64(imageWidth)/2, Y: float64(imageHeight)/2, Z: -100 } }
+  camera := scene_objects.Camera{ scene_objects.Point3D{X: float64(imageWidth)/2, Y: float64(imageHeight)/2, Z: -100 } }
 
   scene := loadScene()
 
@@ -50,7 +21,7 @@ func main() {
       //Create ray with origin ox, oy and direction from px, py to ox, oy
       primRay := computeRay(px, py, camera)
       //Scene.isIntersectedBy(primRay)
-      curr_intersection := new(Intersection)
+      curr_intersection := new(scene_objects.Intersection)
       curr_intersection.Distance = math.MaxFloat64
 
       for idx := 0; idx < len(scene); idx ++{
@@ -72,7 +43,7 @@ func main() {
 // TODO: Move equation solver to specific method (math lib maybe)
 // solution[] = [sol1, sol2]
 
-func intersects(primRay scene_objects.Ray, obj Sphere) Intersection{
+func intersects(primRay scene_objects.Ray, obj scene_objects.Sphere) scene_objects.Intersection{
   v := primRay.Direction
   o := primRay.Origin
   c := obj.Center
@@ -85,7 +56,7 @@ func intersects(primRay scene_objects.Ray, obj Sphere) Intersection{
   C := oc.ScalarProd(oc) - math.Pow(r,2)
 
   delta := math.Pow(B, 2) - 4*A*C
-  intersection := Intersection{ Distance: -1}
+  intersection := scene_objects.Intersection{ Distance: -1}
   //two solutions - calculate distance and return the closest
   if delta > 0{
     sol1 := (-B + delta)/(2*A)
@@ -126,21 +97,12 @@ func intersects(primRay scene_objects.Ray, obj Sphere) Intersection{
   }
 }
 
-// func computeHitPoint(t float64, r Ray) Point3D {
-//   hX := r.Origin.X + t*r.Direction.X
-//   hY := r.Origin.Y + t*r.Direction.Y
-//   hZ := r.Origin.Z + t*r.Direction.Z
-//
-//   hitP := Point3D { X: hX, Y: hY, Z: hZ }
-//   return hitP
-// }
-
-func loadScene() []Sphere{
-  obj := Sphere{ Center: scene_objects.Point3D {X: 150, Y: 150, Z: 150}, SphereRay: 50 }
-  return []Sphere{obj}
+func loadScene() []scene_objects.Sphere{
+  obj := scene_objects.Sphere{ Center: scene_objects.Point3D {X: 150, Y: 150, Z: 150}, SphereRay: 50 }
+  return []scene_objects.Sphere{obj}
 }
 
-func computeRay(px, py int, cam Camera) scene_objects.Ray {
+func computeRay(px, py int, cam scene_objects.Camera) scene_objects.Ray {
   rayDirX := float64(px) - cam.Position.X
   rayDirY := float64(py) - cam.Position.Y
   rayDirZ := -cam.Position.Z
