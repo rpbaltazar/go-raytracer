@@ -1,6 +1,7 @@
 package scene_objects
 
 import "testing"
+import "math"
 
 func Test_Point3D_Subtract_Point3D(t *testing.T){
   p1 := Point3D {X: 1, Y: 1, Z: 1}
@@ -39,5 +40,15 @@ func Test_Point3D_ScalarProd_Point3D(t *testing.T){
 
   if res:=p1.ScalarProd(p2); res != out{
     t.Errorf("(%v).ScalarProd(%v) => expected %v, got %v", p1, p2, out, res)
+  }
+}
+
+func Test_Point3D_ComputeDistance_Point3D(t *testing.T){
+  p1 := Point3D {X: 1, Y: 1, Z: 1}
+  p2 := Point3D {X: 5, Y: -3, Z: 4.5}
+  out:= math.Sqrt(44.25)
+
+  if res:=p1.ComputeDistance(p2); res != out{
+    t.Errorf("(%v).ComputeDistance(%v) => expected %v, got %v", p1, p2, out, res)
   }
 }
