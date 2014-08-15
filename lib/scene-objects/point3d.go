@@ -14,10 +14,14 @@ func (p *Point3D) Add(p1 Point3D) Point3D {
   return Point3D{ X: p.X+p1.X, Y: p.Y+p1.Y, Z: p.Z+p1.Z}
 }
 
+//TODO: there should be a struct like point3d representing a vector
+// and this method belongs there
 func (p *Point3D) Multiply(f1 float64) Point3D {
   return Point3D{ X: p.X*f1, Y: p.Y*f1, Z: p.Z*f1}
 }
 
+//TODO: there should be a struct like point3d representing a vector
+// and this method belongs there
 func (p *Point3D) ScalarProd(p1 Point3D) float64 {
   return p.X*p1.X + p.Y*p1.Y + p.Z*p1.Z
 }

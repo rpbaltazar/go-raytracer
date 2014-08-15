@@ -4,6 +4,7 @@ import (
   "fmt"
   "math"
   "go-raytracer/lib/scene-objects"
+  "go-raytracer/lib"
 )
 
 var imageWidth, imageHeight int = 800, 640
@@ -40,9 +41,6 @@ func main() {
   }
 }
 
-// TODO: Move equation solver to specific method (math lib maybe)
-// solution[] = [sol1, sol2]
-
 func intersects(primRay scene_objects.Ray, obj scene_objects.Sphere) scene_objects.Intersection{
   v := primRay.Direction
   o := primRay.Origin
@@ -55,20 +53,24 @@ func intersects(primRay scene_objects.Ray, obj scene_objects.Sphere) scene_objec
   B := 2* oc.ScalarProd(v)
   C := oc.ScalarProd(oc) - math.Pow(r,2)
 
-  delta := math.Pow(B, 2) - 4*A*C
-  intersection := scene_objects.Intersection{ Distance: -1}
-  //two solutions - calculate distance and return the closest
-  if delta > 0{
-    sol1 := (-B + delta)/(2*A)
-    sol2 := (-B - delta)/(2*A)
+  intersection := scene_objects.Intersection{Distance: -1}
+  quadraticSolution := gomath.QuadraticEquationSolver(A, B, C)
 
-    // hitP1 := computeHitPoint(sol1, primRay)
-    hitP1 := primRay.Point(sol1)
-    // hitP2 := computeHitPoint(sol2, primRay)
-    hitP2 := primRay.Point(sol2)
+  if quadraticSolution.NumSolutions == 0{
+    return intersection
+  } else if quadraticSolution.NumSolutions == 1 {
+    hitP1 := primRay.PointInRay(quadraticSolution.S1)
+    distance1:= primRay.Origin.ComputeDistance(hitP1)
 
-    distance1 := primRay.Origin.ComputeDistance(hitP1)
-    distance2 := primRay.Origin.ComputeDistance(hitP2)
+    intersection.Distance = distance1
+    intersection.HitPoint = hitP1
+  } else{
+
+    hitP1 := primRay.PointInRay(quadraticSolution.S1)
+    distance1:= primRay.Origin.ComputeDistance(hitP1)
+
+    hitP2 := primRay.PointInRay(quadraticSolution.S2)
+    distance2:= primRay.Origin.ComputeDistance(hitP2)
 
     if distance1 > distance2{
       intersection.Distance = distance2
@@ -77,24 +79,9 @@ func intersects(primRay scene_objects.Ray, obj scene_objects.Sphere) scene_objec
       intersection.Distance = distance1
       intersection.HitPoint = hitP1
     }
-
-    intersection.Object = obj
-    return intersection
-  // one solution - return distance
-  }else if delta == 0{
-    sol := (-B)/(2*A)
-    // hitP := computeHitPoint(sol, primRay)
-    hitP := primRay.Point(sol)
-    distance := primRay.Origin.ComputeDistance(hitP)
-
-    intersection.HitPoint = hitP
-    intersection.Distance = distance
-    intersection.Object = obj
-
-    return intersection
-  }else{
-    return intersection
   }
+
+  return intersection
 }
 
 func loadScene() []scene_objects.Sphere{
