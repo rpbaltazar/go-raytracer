@@ -131,7 +131,7 @@ func computeRay(px, py int, cam scene_objects.Camera) scene_objects.Ray {
 }
 
 func export(render image.Image) {
-  w, _ := os.Create("new.png")
+  w, _ := os.Create("render.png")
   defer w.Close()
   png.Encode(w, render) //Encode writes the Image render to w in PNG format.
 }
