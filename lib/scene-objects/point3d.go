@@ -26,6 +26,14 @@ func (p *Point3D) ScalarProd(p1 Point3D) float64 {
   return p.X*p1.X + p.Y*p1.Y + p.Z*p1.Z
 }
 
+//TODO: there should be a struct like point3d representing a vector
+// and this method belongs there
+func (p *Point3D) Normalize() Point3D {
+  dotProd := p.ScalarProd(*p)
+  norm := math.Sqrt(dotProd)
+  return Point3D{ X: p.X/norm, Y: p.Y/norm, Z: p.Z/norm}
+}
+
 func (p *Point3D) Pow(f float64) Point3D {
   return Point3D{ X: math.Pow(p.X, f), Y: math.Pow(p.Y, f), Z: math.Pow(p.Z, f) }
 }

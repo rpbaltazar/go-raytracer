@@ -9,6 +9,7 @@ import (
   "image/color"
   "image/png"
   "os"
+  "time"
 )
 
 const (
@@ -131,7 +132,7 @@ func computeRay(px, py int, cam scene_objects.Camera) scene_objects.Ray {
 }
 
 func export(render image.Image) {
-  w, _ := os.Create("render.png")
+  w, _ := os.Create("render_"+time.Now().Format("20060102150405")+".png")
   defer w.Close()
   png.Encode(w, render) //Encode writes the Image render to w in PNG format.
 }
