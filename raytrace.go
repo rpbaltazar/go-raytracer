@@ -1,46 +1,77 @@
 package main
 
 import (
-  "fmt"
+  // "fmt"
   "math"
   "go-raytracer/lib/scene-objects"
   "go-raytracer/lib"
+  "image"
+  "image/color"
+  "image/png"
+  "os"
 )
 
-var imageWidth, imageHeight int = 800, 640
+const (
+  ImageWidth = 800
+  ImageHeight = 640
+)
+
+var (
+  white color.Color = color.RGBA{255, 255, 255, 255}
+  black color.Color = color.RGBA{0, 0, 0, 255}
+)
 
 func main() {
 
-  camera := scene_objects.Camera{ scene_objects.Point3D{X: float64(imageWidth)/2, Y: float64(imageHeight)/2, Z: -100 } }
+  camera := scene_objects.Camera{ scene_objects.Point3D{X: float64(ImageWidth)/2, Y: float64(ImageHeight)/2, Z: -100 } }
+  light := scene_objects.Light { scene_objects.Point3D{X: 0, Y: 300, Z: 300} }
+  render := image.NewRGBA(image.Rect(0,0,ImageWidth, ImageHeight))
 
   scene := loadScene()
 
-  fmt.Println(camera)
-
-  for px := 0; px < imageWidth; px++{
-    for py :=0; py < imageHeight; py++{
-      //Create ray with origin ox, oy and direction from px, py to ox, oy
+  for px := 0; px < ImageWidth; px++{
+    for py :=0; py < ImageHeight; py++{
       primRay := computeRay(px, py, camera)
-      //Scene.isIntersectedBy(primRay)
-      curr_intersection := new(scene_objects.Intersection)
-      curr_intersection.Distance = math.MaxFloat64
+      currIntersection := new(scene_objects.Intersection)
+      currIntersection.Distance = -1
 
       for idx := 0; idx < len(scene); idx ++{
-        new_intersection := intersects(primRay, scene[idx])
-        //intersects
-        fmt.Println(new_intersection.Distance, new_intersection.Distance < curr_intersection.Distance)
-        if new_intersection.Distance > 0 && new_intersection.Distance < curr_intersection.Distance{
-          curr_intersection.Distance = new_intersection.Distance
-          curr_intersection.Object = new_intersection.Object
+        newIntersection := intersects(primRay, scene[idx])
+        if newIntersection.Distance > 0 && (newIntersection.Distance < currIntersection.Distance || currIntersection.Distance == -1){
+          currIntersection.Distance = newIntersection.Distance
+          currIntersection.Object = newIntersection.Object
+          currIntersection.ObjectId = idx
         }
       }
-      if (curr_intersection.Distance > 0){
-        fmt.Println("Ray intersects Object @", curr_intersection)
+      if (currIntersection.Distance > 0){
+        shadowRay := scene_objects.Ray{Origin: currIntersection.HitPoint, Direction: light.Position.Subtract(currIntersection.HitPoint) }
+        isInShadow := false
+
+        for idx := 0; idx < len(scene); idx ++{
+          if idx == currIntersection.ObjectId{
+            continue
+          }
+          shadowIntersection:= intersects(shadowRay, scene[idx])
+          if shadowIntersection.Distance > 0{
+            isInShadow = true
+            break
+          }
+        }
+        if isInShadow{
+          render.Set(px, py, black)
+        }else{
+          render.Set(px, py, currIntersection.Object.SphereColor)
+        }
       }
     }
   }
+  export(render)
+  // image.Print()
 }
-
+//TODO: This method should be renamed to isIntersected and
+// moved to the sphere file.
+// All other objects should implement the same method with
+// their own equations for intersection
 func intersects(primRay scene_objects.Ray, obj scene_objects.Sphere) scene_objects.Intersection{
   v := primRay.Direction
   o := primRay.Origin
@@ -64,8 +95,9 @@ func intersects(primRay scene_objects.Ray, obj scene_objects.Sphere) scene_objec
 
     intersection.Distance = distance1
     intersection.HitPoint = hitP1
-  } else{
+    intersection.Object = obj
 
+  } else{
     hitP1 := primRay.PointInRay(quadraticSolution.S1)
     distance1:= primRay.Origin.ComputeDistance(hitP1)
 
@@ -79,13 +111,14 @@ func intersects(primRay scene_objects.Ray, obj scene_objects.Sphere) scene_objec
       intersection.Distance = distance1
       intersection.HitPoint = hitP1
     }
+    intersection.Object = obj
   }
 
   return intersection
 }
 
 func loadScene() []scene_objects.Sphere{
-  obj := scene_objects.Sphere{ Center: scene_objects.Point3D {X: 150, Y: 150, Z: 150}, SphereRay: 50 }
+  obj := scene_objects.Sphere{ Center: scene_objects.Point3D {X: 150, Y: 150, Z: 150}, SphereRay: 50, SphereColor: color.RGBA{0,0,255,255} }
   return []scene_objects.Sphere{obj}
 }
 
@@ -95,4 +128,10 @@ func computeRay(px, py int, cam scene_objects.Camera) scene_objects.Ray {
   rayDirZ := -cam.Position.Z
 
   return scene_objects.Ray{ Origin: cam.Position, Direction: scene_objects.Point3D {rayDirX, rayDirY, rayDirZ} }
+}
+
+func export(render image.Image) {
+  w, _ := os.Create("new.png")
+  defer w.Close()
+  png.Encode(w, render) //Encode writes the Image render to w in PNG format.
 }
