@@ -58,16 +58,19 @@ func main() {
             break
           }
         }
+        //if hit point is in shadow, then pixel is black
         if isInShadow{
           render.Set(px, py, black)
+        //else we set the color
         }else{
+          //TODO: Determine the light brightness to determine the color.
+          //Appel's algo?
           render.Set(px, py, currIntersection.Object.SphereColor)
         }
       }
     }
   }
   export(render)
-  // image.Print()
 }
 //TODO: This method should be renamed to isIntersected and
 // moved to the sphere file.
@@ -119,7 +122,12 @@ func intersects(primRay scene_objects.Ray, obj scene_objects.Sphere) scene_objec
 }
 
 func loadScene() []scene_objects.Sphere{
-  obj := scene_objects.Sphere{ Center: scene_objects.Point3D {X: 150, Y: 150, Z: 150}, SphereRay: 50, SphereColor: color.RGBA{0,0,255,255} }
+  obj := scene_objects.Sphere{
+    Center: scene_objects.Point3D {X: 150, Y: 150, Z: 150},
+    SphereRay: 50,
+    SphereColor: color.RGBA{0,0,255,255},
+    RefractiveIndex: 1.5,
+  }
   return []scene_objects.Sphere{obj}
 }
 
