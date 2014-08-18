@@ -136,7 +136,10 @@ func computeRay(px, py int, cam scene_objects.Camera) scene_objects.Ray {
   rayDirY := float64(py) - cam.Position.Y
   rayDirZ := -cam.Position.Z
 
-  return scene_objects.Ray{ Origin: cam.Position, Direction: scene_objects.Point3D {rayDirX, rayDirY, rayDirZ} }
+  normalizedDirection := scene_objects.Point3D {rayDirX, rayDirY, rayDirZ}
+  normalizedDirection = normalizedDirection.Normalize()
+
+  return scene_objects.Ray{ Origin: cam.Position, Direction: normalizedDirection }
 }
 
 func export(render image.Image) {
